@@ -87,6 +87,7 @@ public:
     virtual ~cpu_stall_detector() = default;
     static int signal_number() { return SIGRTMIN + 1; }
     void start_task_run(sched_clock::time_point now);
+    void start_new_task();
     void end_task_run(sched_clock::time_point now);
     void generate_trace();
     void update_config(cpu_stall_detector_config cfg);

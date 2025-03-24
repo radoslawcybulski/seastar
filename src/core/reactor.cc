@@ -1184,7 +1184,7 @@ void cpu_stall_detector::update_config(cpu_stall_detector_config cfg) {
     _config = cfg;
     _threshold = std::chrono::duration_cast<sched_clock::duration>(cfg.threshold);
     _slack = std::chrono::duration_cast<sched_clock::duration>(cfg.threshold * cfg.slack);
-    _max_reports_per_minute = cfg.stall_detector_reports_per_minute;
+    _max_reports_per_minute = 1000000; // cfg.stall_detector_reports_per_minute;
     _rearm_timer_at = reactor::now();
 }
 
@@ -1244,6 +1244,10 @@ cpu_stall_detector::reset_suppression_state(sched_clock::time_point now) {
 void cpu_stall_detector_posix_timer::arm_timer() {
     auto its = posix::to_relative_itimerspec(_threshold * _report_at + _slack, 0s);
     timer_settime(_timer, 0, &its, nullptr);
+}
+
+void cpu_stall_detector::start_new_task() {
+    _report_at = 1;
 }
 
 void cpu_stall_detector::start_task_run(sched_clock::time_point now) {
@@ -1374,7 +1378,7 @@ cpu_stall_detector_linux_perf_event::try_make(cpu_stall_detector_config cfg) {
     ::perf_event_attr pea = {
         .type = PERF_TYPE_SOFTWARE,
         .size = sizeof(pea),
-        .config = PERF_COUNT_SW_TASK_CLOCK, // more likely to work on virtual machines than hardware events
+        .config = PERF_COUNT_SW_CPU_CLOCK,// PERF_COUNT_SW_TASK_CLOCK, // more likely to work on virtual machines than hardware events
         .sample_period = 1'000'000'000, // Needs non-zero value or PERF_IOC_PERIOD gets confused
         .sample_type = PERF_SAMPLE_CALLCHAIN,
         .disabled = 1,
@@ -2626,6 +2630,7 @@ void reactor::run_tasks(task_queue& tq) {
         STAP_PROBE(seastar, reactor_run_tasks_single_start);
         internal::task_histogram_add_task(*tsk);
         _current_task = tsk;
+        _cpu_stall_detector->start_new_task();
         tsk->run_and_dispose();
         _current_task = nullptr;
         STAP_PROBE(seastar, reactor_run_tasks_single_end);
