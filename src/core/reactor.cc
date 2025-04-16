@@ -1378,7 +1378,7 @@ cpu_stall_detector_linux_perf_event::try_make(cpu_stall_detector_config cfg) {
     ::perf_event_attr pea = {
         .type = PERF_TYPE_SOFTWARE,
         .size = sizeof(pea),
-        .config = PERF_COUNT_SW_CPU_CLOCK,// PERF_COUNT_SW_TASK_CLOCK, // more likely to work on virtual machines than hardware events
+        .config = PERF_COUNT_SW_TASK_CLOCK, // more likely to work on virtual machines than hardware events
         .sample_period = 1'000'000'000, // Needs non-zero value or PERF_IOC_PERIOD gets confused
         .sample_type = PERF_SAMPLE_CALLCHAIN,
         .disabled = 1,
