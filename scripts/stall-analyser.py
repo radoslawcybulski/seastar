@@ -217,7 +217,8 @@ Use --direction={'bottom-up' if top_down else 'top-down'} to print {'callees' if
             if level >= 0:
                 avg = round(total / count) if count else 0
                 prefix = _prefix(prefix_list)
-                p = '+' if idx == 1 or idx == out_of else '|'
+                #p = '+' if idx == 1 or idx == out_of else '|'
+                p = '|'
                 p += '+'
                 l = f"[{level}#{idx}/{out_of} {round(100*rel)}%]"
                 cont_indent = len(l) + 1
@@ -244,7 +245,7 @@ Use --direction={'bottom-up' if top_down else 'top-down'} to print {'callees' if
                             l += f"{prefix}{p}{' '*cont_indent}{li.strip()}\n"
                 self.smart_print(l, width)
                 if n.printed:
-                    print(f"{prefix}-> continued at addr={n.addr} above")
+                    print(f"{prefix}{' '*cont_indent}-> continued at addr={n.addr} above")
                     return
                 n.printed = True
             next = n.sorted_callees() if top_down else n.sorted_callers()
